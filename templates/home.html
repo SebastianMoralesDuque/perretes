@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Inicio - Perretes{% endblock %}
+
+{% block content %}
+{% if user.is_authenticated %}
+<section class="bark-form-section" id="bark-form-section">
+    {% include 'partials/bark_form.html' with title="¿Qué estás pensando?" %}
+</section>
+{% else %}
+<section class="bark-form-section guest-cta">
+    <h2>Bienvenido a Perretes</h2>
+    <p>La red social donde todos ladran. Únete a la conversación.</p>
+    <div class="cta-actions">
+        <a href="/registro/" class="btn btn-primary">Crear cuenta</a>
+        <a href="/login/" class="btn btn-secondary">Entrar</a>
+    </div>
+</section>
+{% endif %}
+
+{% include 'partials/feed_section.html' with title="Feed global" prefix="feed-" empty_icon="🌑" empty_text="Aún no hay ladridos. ¡Sé el primero!" %}
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/feed.js' %}"></script>
+{% endblock %}

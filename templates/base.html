@@ -1,0 +1,95 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token }}">
+    <title>{% block title %}Perretes{% endblock %}</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐕</text></svg>">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container nav-container">
+            <a href="/" class="logo"><span>🐕</span> Perretes</a>
+
+            <div class="nav-search">
+                <input
+                    type="text"
+                    id="global-search"
+                    class="search-input"
+                    placeholder="Buscar..."
+                    autocomplete="off"
+                >
+                <div id="search-dropdown" class="search-dropdown hidden">
+                    <div id="search-users-section" class="search-section hidden">
+                        <h4 class="search-section-title">Usuarios</h4>
+                        <ul id="search-users-list" class="search-list"></ul>
+                    </div>
+                    <div id="search-posts-section" class="search-section hidden">
+                        <h4 class="search-section-title">Ladridos</h4>
+                        <ul id="search-posts-list" class="search-list"></ul>
+                    </div>
+                    <div id="search-empty" class="search-empty hidden">No se encontraron resultados.</div>
+                </div>
+            </div>
+
+            <div class="nav-links" id="nav-links">
+                <!-- Se rellena dinámicamente con JS -->
+            </div>
+        </div>
+    </nav>
+
+    <main class="container">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Toast -->
+    <div id="toast" class="toast hidden">
+        <span id="toast-message"></span>
+        <div class="toast-progress"></div>
+    </div>
+
+    <!-- Modal de confirmación global -->
+    <div id="confirm-modal" class="modal hidden">
+        <div class="modal-overlay"></div>
+        <div class="modal-card">
+            <h3 id="modal-title">¿Estás seguro?</h3>
+            <p id="modal-message">Esta acción no se puede deshacer.</p>
+            <div class="modal-actions">
+                <button id="modal-cancel" class="btn btn-secondary">Cancelar</button>
+                <button id="modal-confirm" class="btn btn-danger">
+                    <span class="btn-text">Confirmar</span>
+                    <span class="spinner hidden"></span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- FAB mobile (solo en home autenticado) -->
+    <button id="fab-compose" class="fab hidden" title="Nuevo ladrido">✏️</button>
+
+    <!-- Skeleton card template (clonado desde JS) -->
+    <template id="skeleton-card-template">
+        <div class="bark-card skeleton-card" style="min-height:280px;display:flex;flex-direction:column;justify-content:flex-end;padding:1.25rem;">
+            <div class="skeleton-header" style="margin-bottom:0.75rem;">
+                <div class="skeleton-avatar skeleton" style="width:2.2rem;height:2.2rem;"></div>
+                <div style="flex:1;display:flex;flex-direction:column;gap:0.4rem;">
+                    <div class="skeleton-line short skeleton" style="height:0.7rem;width:35%;"></div>
+                    <div class="skeleton-line skeleton" style="height:0.55rem;width:25%;"></div>
+                </div>
+            </div>
+            <div class="skeleton-line skeleton" style="height:1rem;margin-bottom:0.6rem;width:92%;"></div>
+            <div class="skeleton-line skeleton" style="height:1rem;margin-bottom:0.6rem;width:78%;"></div>
+            <div class="skeleton-line skeleton" style="height:1rem;width:55%;"></div>
+        </div>
+    </template>
+
+    <script src="{% static 'js/theme.js' %}"></script>
+    <script src="{% static 'js/api.js' %}"></script>
+    <script src="{% static 'js/auth.js' %}"></script>
+    <script src="{% static 'js/search.js' %}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

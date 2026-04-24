@@ -1,0 +1,12 @@
+<section class="feed-section">
+    <h2>{{ title }}</h2>
+    <div id="{{ prefix }}loading" class="loading hidden">{{ loading_text|default:"Cargando ladridos..." }}</div>
+    <div id="{{ prefix }}content" class="feed hidden"></div>
+    <div id="{{ prefix }}empty" class="empty-state hidden">
+        <div class="empty-icon">{{ empty_icon|default:"📝" }}</div>
+        <p>{{ empty_text|default:"Aún no hay ladridos." }}</p>
+    </div>
+    <div id="{{ prefix }}pagination" class="pagination-controls hidden">
+        <button id="{{ prefix }}load-more-btn" class="btn btn-secondary">Cargar más</button>
+    </div>
+</section>

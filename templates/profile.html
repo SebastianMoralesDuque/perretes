@@ -1,0 +1,154 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Perfil - Perretes{% endblock %}
+
+{% block content %}
+<section class="profile-header">
+    <div class="profile-banner"></div>
+    <div class="profile-info">
+        <div class="avatar avatar-lg" id="profile-avatar">🐶</div>
+        <h1 id="profile-username">Cargando...</h1>
+        <p id="profile-date" class="meta"></p>
+    </div>
+</section>
+
+<section class="profile-content">
+    <div id="owner-bark-form" class="hidden">
+        {% include 'partials/bark_form.html' with title="Publicar ladrido" %}
+    </div>
+
+    {% include 'partials/feed_section.html' with title="Ladridos" prefix="barks-" empty_icon="📝" empty_text="Este usuario aún no ha ladrado." %}
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/feed.js' %}"></script>
+<script>
+    (function() {
+        initAuthNav();
+
+        const username = window.location.pathname.split('/').filter(Boolean).pop();
+        const profileUsername = document.getElementById('profile-username');
+        const profileDate = document.getElementById('profile-date');
+        const ownerForm = document.getElementById('owner-bark-form');
+        const barksLoading = document.getElementById('barks-loading');
+        const barksContent = document.getElementById('barks-content');
+        const barksEmpty = document.getElementById('barks-empty');
+        const barksPagination = document.getElementById('barks-pagination');
+        const loadMoreBtn = document.getElementById('barks-load-more-btn');
+
+        let nextUrl = null;
+        let hasLoaded = false;
+
+        function showProfileSkeletons() {
+            barksContent.innerHTML = '';
+            const template = document.getElementById('skeleton-card-template');
+            for (let i = 0; i < 2; i++) {
+                const skel = template
+                    ? template.content.cloneNode(true).firstElementChild
+                    : document.createElement('div');
+                if (!template) {
+                    skel.className = 'bark-card skeleton-card';
+                    skel.innerHTML = `
+                        <div class="skeleton-header">
+                            <div class="skeleton-avatar skeleton"></div>
+                            <div class="skeleton-line short skeleton"></div>
+                        </div>
+                        <div class="skeleton-line skeleton" style="height:0.6rem;margin-bottom:0.5rem;"></div>
+                        <div class="skeleton-line skeleton" style="height:0.6rem;width:70%;"></div>
+                    `;
+                }
+                barksContent.appendChild(skel);
+            }
+            barksContent.classList.remove('hidden');
+        }
+
+        async function loadProfile() {
+            try {
+                const profile = await apiGet('/api/users/' + username + '/profile/');
+                profileUsername.textContent = '@' + profile.username;
+                profileDate.textContent = 'Miembro desde ' + new Date(profile.date_joined).toLocaleDateString('es-ES');
+                const profileAvatar = document.getElementById('profile-avatar');
+                if (profileAvatar && profile.avatar_emoji) {
+                    profileAvatar.textContent = profile.avatar_emoji;
+                    profileAvatar.style.background = profile.avatar_color;
+                }
+                const banner = document.querySelector('.profile-banner');
+                if (banner && profile.avatar_color) {
+                    banner.style.background = `linear-gradient(135deg, ${profile.avatar_color}, ${profile.avatar_color}88)`;
+                }
+                if (profile.is_me) {
+                    ownerForm.classList.remove('hidden');
+                    initBarkForm('bark-form', 'bark-content', 'char-count', 'bark-submit-btn', 'bark-errors', function(bark) {
+                        prependBark(barksContent, bark);
+                        barksEmpty.classList.add('hidden');
+                    });
+                }
+            } catch (err) {
+                if (err.status === 404) {
+                    profileUsername.textContent = 'Usuario no encontrado';
+                    document.title = '404 - Perretes';
+                } else {
+                    profileUsername.textContent = 'Error al cargar perfil';
+                }
+            }
+        }
+
+        function renderBarks(data) {
+            if (data.results.length === 0 && !nextUrl) {
+                barksContent.classList.add('hidden');
+                barksEmpty.classList.remove('hidden');
+                barksPagination.classList.add('hidden');
+                return;
+            }
+            barksContent.classList.remove('hidden');
+            barksEmpty.classList.add('hidden');
+            data.results.forEach((bark, i) => {
+                appendBark(barksContent, bark);
+                const card = barksContent.lastElementChild;
+                card.style.animationDelay = `${i * 0.05}s`;
+            });
+            nextUrl = data.next;
+            if (nextUrl) {
+                barksPagination.classList.remove('hidden');
+            } else {
+                barksPagination.classList.add('hidden');
+            }
+        }
+
+        async function loadBarks(url) {
+            if (!hasLoaded) showProfileSkeletons();
+            barksLoading.classList.remove('hidden');
+            try {
+                const data = await apiGet(url);
+                barksLoading.classList.add('hidden');
+                if (!hasLoaded) barksContent.innerHTML = '';
+                renderBarks(data);
+                hasLoaded = true;
+            } catch (err) {
+                barksLoading.classList.add('hidden');
+                if (!hasLoaded) barksContent.innerHTML = '';
+                barksLoading.textContent = 'Error al cargar ladridos.';
+            }
+        }
+
+        loadMoreBtn.addEventListener('click', function() {
+            if (nextUrl) {
+                const url = new URL(nextUrl);
+                loadBarks(url.pathname + url.search);
+            }
+        });
+
+        // Obtener usuario actual antes de cargar barks
+        apiGet('/api/users/me/').then(data => {
+            if (data.authenticated) {
+                currentUser = data.user;
+            }
+        }).catch(() => {}).finally(() => {
+            loadProfile();
+            loadBarks('/api/barkposts/user/' + username + '/');
+        });
+    })();
+</script>
+{% endblock %}

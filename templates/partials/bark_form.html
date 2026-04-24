@@ -1,0 +1,28 @@
+<h2>{{ title }}</h2>
+<form id="bark-form" class="bark-form">
+    <textarea
+        id="bark-content"
+        name="content"
+        rows="3"
+        maxlength="140"
+        placeholder="Escribe tu ladrido (máx. 140 caracteres)..."
+        required
+    ></textarea>
+    <div class="form-group file-group">
+        <label for="bark-image" class="file-label">📎 Adjuntar imagen</label>
+        <input type="file" id="bark-image" name="image" accept="image/*" class="file-input">
+        <span class="file-name" id="file-name"></span>
+    </div>
+    <div id="image-preview" class="image-preview hidden">
+        <img id="image-preview-img" src="" alt="Vista previa">
+        <button type="button" id="remove-image-btn" class="remove-image-btn" title="Quitar imagen">&times;</button>
+    </div>
+    <div class="form-actions">
+        <span id="char-count" class="char-count">0/140</span>
+        <button type="submit" class="btn btn-primary" id="bark-submit-btn">
+            <span class="btn-text">Ladrar</span>
+            <span class="spinner hidden"></span>
+        </button>
+    </div>
+    <div id="bark-errors" class="errors"></div>
+</form>
