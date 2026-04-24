@@ -60,6 +60,10 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.perretes.rule=Host(`perretes.sebastianmorales.sbs`)"
+      - "traefik.http.routers.perretes.entrypoints=http"
+      - "traefik.http.routers.perretes-secure.rule=Host(`perretes.sebastianmorales.sbs`)"
+      - "traefik.http.routers.perretes-secure.entrypoints=https"
+      - "traefik.http.routers.perretes-secure.tls.certresolver=letsencrypt"
       - "traefik.http.services.perretes.loadbalancer.server.port=8000"
 
   celery:
