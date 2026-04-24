@@ -17,5 +17,5 @@ urlpatterns = [
     path('usuarios/<str:username>/', TemplateView.as_view(template_name='profile.html'), name='profile'),
 ]
 
-if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+# Serve media files in all environments (production uses container volume)
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

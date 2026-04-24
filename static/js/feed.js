@@ -603,8 +603,9 @@ function initFAB() {
     initBarkForm('bark-form', 'bark-content', 'char-count', 'bark-submit-btn', 'bark-errors', function(bark) {
         const feedContent = document.getElementById('feed-content');
         const feedEmpty = document.getElementById('feed-empty');
-        prependBark(feedContent, bark);
+        feedContent.classList.remove('hidden');
         feedEmpty.classList.add('hidden');
+        prependBark(feedContent, bark);
     });
 
     initFAB();
