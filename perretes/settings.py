@@ -2,15 +2,20 @@
 Django settings for perretes project.
 """
 
+import os
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = 'django-insecure-#0&y(2df6a%nfq0p_id$!t*j_9soyznrh(aj)7=y4ytp2n=r1&'
+SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-#0&y(2df6a%nfq0p_id$!t*j_9soyznrh(aj)7=y4ytp2n=r1&')
 
-DEBUG = True
+DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
 ALLOWED_HOSTS = ['*']
+
+CSRF_TRUSTED_ORIGINS = [
+    'https://perretes.sebastianmorales.sbs',
+]
 
 # Application definition
 INSTALLED_APPS = [
@@ -27,6 +32,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -55,19 +61,21 @@ TEMPLATES = [
 WSGI_APPLICATION = 'perretes.wsgi.application'
 
 # Database
-# SQLite ahora, PostgreSQL en producción
+# Use PostgreSQL in production, SQLite as fallback for local development
 DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.environ.get('DB_NAME', 'perretes'),
+        'USER': os.environ.get('DB_USER', 'perretes'),
+        'PASSWORD': os.environ.get('DB_PASSWORD', 'perretes'),
+        'HOST': os.environ.get('DB_HOST', 'localhost'),
+        'PORT': os.environ.get('DB_PORT', '5432'),
+        'CONN_MAX_AGE': 600,
+    }
+} if os.environ.get('DB_HOST') else {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
-        # Campos preparados para PostgreSQL:
-        # 'ENGINE': 'django.db.backends.postgresql',
-        # 'NAME': 'perretes',
-        # 'USER': 'perretes_user',
-        # 'PASSWORD': 'strong_password',
-        # 'HOST': 'localhost',
-        # 'PORT': '5432',
-        # 'CONN_MAX_AGE': 600,  # persistent connections
     }
 }
 
@@ -90,6 +98,8 @@ STATIC_URL = 'static/'
 STATICFILES_DIRS = [
     BASE_DIR / 'static',
 ]
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Media files (imágenes de ladridos)
 MEDIA_URL = 'media/'
@@ -119,13 +129,13 @@ REST_FRAMEWORK = {
 }
 
 # Celery Configuration
-CELERY_BROKER_URL = 'redis://localhost:6379/0'
-CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
+CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL', 'redis://localhost:6379/0')
+CELERY_RESULT_BACKEND = os.environ.get('CELERY_RESULT_BACKEND', 'redis://localhost:6379/0')
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = TIME_ZONE
 
-# En desarrollo, ejecuta tareas Celery de forma síncrona si no hay Redis.
-# En producción, eliminar esta línea y usar workers + Redis reales.
+# En desarrollo (DEBUG=True), ejecuta tareas Celery de forma síncrona si no hay Redis.
+# En producción (DEBUG=False), usa workers + Redis reales.
 CELERY_TASK_ALWAYS_EAGER = DEBUG

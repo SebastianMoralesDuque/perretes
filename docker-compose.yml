@@ -1,0 +1,101 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: perretes
+      POSTGRES_USER: perretes
+      POSTGRES_PASSWORD: perretes
+    volumes:
+      - perretes-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U perretes"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - coolify
+      - default
+
+  redis:
+    image: redis:7-alpine
+    command: redis-server --appendonly yes
+    volumes:
+      - perretes-redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - coolify
+      - default
+
+  web:
+    build: .
+    ports:
+      - "8000"
+    environment:
+      SECRET_KEY: ${SECRET_KEY}
+      DEBUG: "False"
+      DB_HOST: db
+      DB_NAME: perretes
+      DB_USER: perretes
+      DB_PASSWORD: perretes
+      DB_PORT: "5432"
+      CELERY_BROKER_URL: redis://redis:6379/0
+      CELERY_RESULT_BACKEND: redis://redis:6379/0
+      DJANGO_SETTINGS_MODULE: perretes.settings
+    volumes:
+      - perretes-data:/app/media
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - coolify
+      - default
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.perretes.rule=Host(`perretes.sebastianmorales.sbs`)"
+      - "traefik.http.routers.perretes.entrypoints=websecure"
+      - "traefik.http.routers.perretes.tls.certresolver=letsencrypt"
+      - "traefik.http.services.perretes.loadbalancer.server.port=8000"
+
+  celery:
+    build: .
+    command: celery -A perretes worker -l info
+    environment:
+      SECRET_KEY: ${SECRET_KEY}
+      DEBUG: "False"
+      DB_HOST: db
+      DB_NAME: perretes
+      DB_USER: perretes
+      DB_PASSWORD: perretes
+      DB_PORT: "5432"
+      CELERY_BROKER_URL: redis://redis:6379/0
+      CELERY_RESULT_BACKEND: redis://redis:6379/0
+      DJANGO_SETTINGS_MODULE: perretes.settings
+    volumes:
+      - perretes-data:/app/media
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - coolify
+      - default
+
+volumes:
+  perretes-db-data:
+  perretes-redis-data:
+  perretes-data:
+
+networks:
+  coolify:
+    external: true
+  default:
+    driver: bridge
