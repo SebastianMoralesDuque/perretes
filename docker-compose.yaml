@@ -88,8 +88,13 @@ services:
       redis:
         condition: service_healthy
     networks:
-      - coolify
       - default
+    healthcheck:
+      test: ["CMD-SHELL", "celery -A perretes inspect ping > /dev/null 2>&1 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
 
 volumes:
   perretes-db-data:
