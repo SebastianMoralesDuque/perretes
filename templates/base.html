@@ -8,7 +8,7 @@
     <title>{% block title %}Perretes{% endblock %}</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐕</text></svg>">
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
-    <script defer src="https://analytics.sebastianmorales.sbs/script.js" data-website-id="c093fdc7-f86d-4ac9-b58e-01f49857d35f"></script>
+    <script defer src="{{ UMAMI_SCRIPT_URL }}" data-website-id="{{ UMAMI_WEBSITE_ID }}"></script>
 </head>
 <body>
     <nav class="navbar">

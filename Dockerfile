@@ -20,7 +20,7 @@ WORKDIR /app
 
 # Install runtime dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    libpq5 \
+    libpq5 postgresql-client redis-tools \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy installed packages from builder
@@ -31,6 +31,8 @@ ENV PATH=/root/.local/bin:$PATH
 
 # Copy project files
 COPY . .
+COPY entrypoint.sh .
+RUN chmod +x entrypoint.sh
 
 # Collect static files (SECRET_KEY needed for this)
 ENV SECRET_KEY=dummy-secret-key-for-collectstatic
@@ -46,6 +48,8 @@ EXPOSE 8000
 # Healthcheck
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/barkposts/')" || exit 1
+
+ENTRYPOINT ["./entrypoint.sh"]
 
 # Run gunicorn
 CMD ["gunicorn", "--bind", "0.0.0.0:8000", "--workers", "2", "--timeout", "120", "perretes.wsgi:application"]

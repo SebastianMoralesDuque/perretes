@@ -39,7 +39,7 @@ services:
     environment:
       SECRET_KEY: ${SECRET_KEY}
       DEBUG: "False"
-      DB_HOST: db
+      DB_HOST: db-jy93wenrp2gvwn290e61fkj9-191813069979-jy93wenrp2gvwn290e61fkj9-191813069979
       DB_NAME: perretes
       DB_USER: perretes
       DB_PASSWORD: perretes
@@ -72,7 +72,7 @@ services:
     environment:
       SECRET_KEY: ${SECRET_KEY}
       DEBUG: "False"
-      DB_HOST: db
+      DB_HOST: db-jy93wenrp2gvwn290e61fkj9-191813069979
       DB_NAME: perretes
       DB_USER: perretes
       DB_PASSWORD: perretes
@@ -99,7 +99,11 @@ services:
 volumes:
   perretes-db-data:
   perretes-redis-data:
+    external: true
+    name: jy93wenrp2gvwn290e61fkj9_perretes-redis-data
   perretes-data:
+    external: true
+    name: jy93wenrp2gvwn290e61fkj9_perretes-data
 
 networks:
   coolify:
